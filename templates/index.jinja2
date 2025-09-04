@@ -1,39 +1,169 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASCII Animation Server</title>
+    <!-- Tailwind CSS with dark mode support -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
     <style>
-        body { font-family: Consolas, monospace; margin: 20px; }
-        pre { background: #f0f0f0; padding: 10px; }
-        button { margin-left: 10px; }
-        ul { list-style-type: none; padding: 0; }
-        li { margin: 5px 0; }
+        /* Smooth transitions for theme changes */
+        body, .theme-transition {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
     </style>
 </head>
-<body>
-    <h1>ASCII Animation Server</h1>
-    <h3>CURL команда для просмотра анимации:</h3>
-    <pre id="curl-command">curl http://{{ ip }}:8000/1/</pre>
-    <button onclick="copyCommand()">Скопировать</button>
-    <h3>Доступные анимации:</h3>
-    <ul>
-        {% for anim in animations %}
-            <li><a href="/{{ anim }}/">{{ anim }}.txt</a></li>
-        {% endfor %}
-    </ul>
-    <h3>Инструкция:</h3>
-    <p>1. Откройте терминал (win+R, cmd - на windows или Ctrl+Alt+T - на debian/ubuntu/arch)</p>
-    <p>2. Скопируйте команду выше</p>
-    <p>3. Вставьте её в терминал и нажмите Enter</p>
+<body class="bg-gray-100 dark:bg-gray-900 font-sans">
+    <div class="container mx-auto p-6">
+        <!-- Theme Toggle Button -->
+        <div class="flex justify-end mb-4">
+            <button id="themeToggle" class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" aria-label="Toggle theme">
+                <!-- Sun icon (visible in dark mode) -->
+                <svg id="sunIcon" class="w-6 h-6 text-gray-800 dark:text-gray-200 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+                <!-- Moon icon (visible in light mode) -->
+                <svg id="moonIcon" class="w-6 h-6 text-gray-800 dark:text-gray-200 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                </svg>
+            </button>
+        </div>
+
+        <h1 class="text-3xl font-bold text-center mb-6 text-gray-800 dark:text-gray-100">ASCII Animation Server</h1>
+
+        <!-- CURL Command Section -->
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6 theme-transition">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">CURL Command to View Animation</h2>
+            <div class="relative flex items-center">
+                <pre style class="flex-1 bg-gray-100 dark:bg-gray-700 p-4 rounded-md text-gray-800 dark:text-gray-200 overflow-x-auto">
+curl http://{{ ip }}:8000/1/
+                    <button id="copyButton" onclick="copyCommand()" 
+                            class="absolute top-2 right-2 bg-transparent text-white w-8 h-8 rounded-md flex items-center justify-center hover:bg-gray-500 dark:hover:bg-gray-500 transition" 
+                            aria-label="Copy command">
+                        <!-- Copy Icon -->
+                        <svg id="copyIcon" class="w-5 h-5 text-gray-800 dark:text-gray-200 block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        <!-- Checkmark Icon (hidden by default) -->
+                        <svg id="checkIcon" class="w-5 h-5 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </button>
+                </pre>
+            </div>
+        </div>
+
+        <!-- Available Animations Section -->
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6 theme-transition">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Available Animations</h2>
+            <ul class="list-disc list-inside text-gray-800 dark:text-gray-200">
+                {% for anim in animations %}
+                    <li>{{ anim }}.txt</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Instructions Section -->
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 theme-transition">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Instructions</h2>
+            <ol class="list-decimal list-inside text-gray-800 dark:text-gray-200">
+                <li>Open a terminal (Win+R, cmd - on Windows or Ctrl+Alt+T - on Debian/Ubuntu/Arch)</li>
+                <li>Copy the command above</li>
+                <li>Paste it into the terminal and press Enter</li>
+            </ol>
+        </div>
+    </div>
+
     <script>
+        // Theme Toggle Functionality
+        function initTheme() {
+            // Check saved theme or system preference
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            // Set initial theme
+            let theme = 'light';
+            if (savedTheme) {
+                theme = savedTheme;
+            } else if (systemPrefersDark) {
+                theme = 'dark';
+            }
+            
+            // Apply theme
+            document.documentElement.classList.remove('light', 'dark');
+            document.documentElement.classList.add(theme);
+            localStorage.setItem('theme', theme);
+            
+            // Update icons
+            updateThemeIcon(theme);
+        }
+        
+        function updateThemeIcon(theme) {
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+            
+            if (theme === 'dark') {
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            }
+        }
+        
+        function toggleTheme() {
+            const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            // Apply new theme
+            document.documentElement.classList.remove(currentTheme);
+            document.documentElement.classList.add(newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update icon
+            updateThemeIcon(newTheme);
+        }
+        
+        // Copy Command Functionality
         function copyCommand() {
-            const text = document.getElementById("curl-command").innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                alert("Команда скопирована!");
+            const copyIcon = document.getElementById('copyIcon');
+            const checkIcon = document.getElementById('checkIcon');
+            
+            navigator.clipboard.writeText('curl http://{{ ip }}:8000/1/').then(() => {
+                // Show checkmark
+                copyIcon.classList.add('hidden');
+                checkIcon.classList.remove('hidden');
+                
+                // Revert to copy icon after 1.5 seconds
+                setTimeout(() => {
+                    copyIcon.classList.remove('hidden');
+                    checkIcon.classList.add('hidden');
+                }, 1500);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
             });
         }
+        
+        // Initialize theme on load
+        initTheme();
+        
+        // Assign toggle button handler
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        
+        // Monitor system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!localStorage.getItem('theme')) {
+                const newTheme = e.matches ? 'dark' : 'light';
+                document.documentElement.classList.remove('light', 'dark');
+                document.documentElement.classList.add(newTheme);
+                updateThemeIcon(newTheme);
+            }
+        });
     </script>
 </body>
 </html>
