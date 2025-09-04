@@ -86,7 +86,22 @@ def stream_animation(request, anim_id="1"):
 def index(request):
     available_animations = [f[:-4] for f in os.listdir(ANIMATIONS_DIR) 
                           if f.endswith('.txt')]
-    return render(request, 'index.jinja2', {'animations': available_animations, 'ip' : lip})
+    local_ip = get_local_ip()
+    
+    # Проверяем, является ли запрос от curl
+    user_agent = request.META.get('HTTP_USER_AGENT', '').lower()
+    if 'curl' in user_agent:
+        # Формируем текстовый список анимаций для curl
+        if available_animations:
+            response_text = "Available animations:\n" + "\n".join(
+                f"curl http://{local_ip}:8000/{anim_id}/" for anim_id in available_animations
+            )
+        else:
+            response_text = "No animations available."
+        return HttpResponse(response_text, content_type='text/plain; charset=utf-8')
+    
+    # Для браузера рендерим шаблон
+    return render(request, 'index.jinja2', {'animations': available_animations, 'ip': local_ip})
 
 urlpatterns = [
     path('<str:anim_id>/', stream_animation, name='stream_animation'),
